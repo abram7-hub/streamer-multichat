@@ -1,0 +1,25 @@
+appId: com.streamer.multichat
+productName: Streamer Multichat
+directories:
+  output: release
+  buildResources: build
+files:
+  - out/**/*
+  - package.json
+asarUnpack:
+  - '**/*.node'
+win:
+  target:
+    - target: portable
+      arch:
+        - x64
+  # Plik EXE nie jest podpisany cyfrowo certyfikatem wydawcy - Windows SmartScreen
+  # może wyświetlić ostrzeżenie przy pierwszym uruchomieniu (zob. README).
+  signAndEditExecutable: false
+portable:
+  artifactName: ${productName}-${version}-portable.${ext}
+  # Każde uruchomienie rozpakowuje aplikację do własnego katalogu tymczasowego ($PLUGINSDIR\app),
+  # więc dwa równoczesne launchery nie usuwają sobie nawzajem plików. W electron-builder 26
+  # tak działa wartość true - wartość false (wbrew opisowi) daje wspólny katalog jak domyślnie.
+  unpackDirName: true
+publish: null

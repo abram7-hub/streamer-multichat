@@ -1,0 +1,73 @@
+# Dependencies
+node_modules/
+
+# Build output
+out/
+dist/
+# NOTE: build/ holds electron-builder resources (icons) - do not ignore it
+release/
+*.tsbuildinfo
+
+# Environment files (keep only the template)
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Caches
+.cache/
+.vite/
+.eslintcache
+coverage/
+*.cache
+
+# Runtime user data (normally stored in Electron userData, never in the repo)
+userData/
+user-data/
+config.json
+secrets.json
+*.sqlite
+*.sqlite3
+*.db
+cookies/
+*.cookies
+sessions/
+*.session
+*token*.json
+*credentials*.json
+
+# Keys and certificates
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+*.der
+*.jks
+*.keystore
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.swp
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE / editor / tooling settings
+.idea/
+.vscode/
+*.code-workspace

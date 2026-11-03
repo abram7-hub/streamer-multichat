@@ -1,0 +1,106 @@
+/* Gaming Overlay: przezroczyste okno nad grą. Tło okna i warstwy ustawia gaming-main.tsx. */
+
+.gaming-root {
+  position: relative;
+  box-sizing: border-box;
+  height: 100vh;
+  overflow: hidden;
+  padding: 6px;
+  color: #fff;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+.gaming-list {
+  box-sizing: border-box;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Czytelność na dowolnym tle gry - statyczne cienie tekstu (bez animacji, bez filtrów). */
+.gaming-root .overlay-row {
+  text-shadow: none;
+}
+.gaming-root[data-shadow='true'] .overlay-row {
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.85);
+}
+.gaming-root[data-outline='true'] .overlay-row {
+  --o: var(--outline-width, 1px);
+  text-shadow:
+    calc(-1 * var(--o)) calc(-1 * var(--o)) 0 #000,
+    var(--o) calc(-1 * var(--o)) 0 #000,
+    calc(-1 * var(--o)) var(--o) 0 #000,
+    var(--o) var(--o) 0 #000;
+}
+.gaming-root[data-outline='true'][data-shadow='true'] .overlay-row {
+  text-shadow:
+    calc(-1 * var(--o)) calc(-1 * var(--o)) 0 #000,
+    var(--o) calc(-1 * var(--o)) 0 #000,
+    calc(-1 * var(--o)) var(--o) 0 #000,
+    var(--o) var(--o) 0 #000,
+    0 1px 3px rgb(0 0 0 / 0.85);
+}
+
+/* Wygasanie wiadomości: tylko przezroczystość (czas zgodny z GAMING_FADE_MS). */
+.gaming-root .chat-row.leaving {
+  /* animation: none - wypełnienie animacji wejścia nie może blokować wygaszania. */
+  animation: none;
+  opacity: 0;
+  transition: opacity 450ms ease;
+}
+
+/* Tryb edycji: całe okno można przeciągnąć, widać subtelną ramkę i pasek z informacją. */
+.gaming-root[data-edit='true'] {
+  -webkit-app-region: drag;
+  outline: 1px dashed rgb(255 255 255 / 0.55);
+  outline-offset: -1px;
+  background-color: rgb(10 10 14 / 0.35) !important;
+}
+.gaming-edit-bar {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  right: 6px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgb(10 10 14 / 0.8);
+  font-size: 12px;
+}
+.gaming-edit-bar button {
+  -webkit-app-region: no-drag;
+  border: 1px solid rgb(255 255 255 / 0.4);
+  border-radius: 5px;
+  background: transparent;
+  color: #fff;
+  font-size: 12px;
+  padding: 2px 8px;
+  cursor: pointer;
+}
+.gaming-placeholder {
+  margin: auto;
+  padding: 12px;
+  font-size: 13px;
+  opacity: 0.7;
+  text-align: center;
+}
+.gaming-resize-grip {
+  -webkit-app-region: no-drag;
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  width: 16px;
+  height: 16px;
+  cursor: nwse-resize;
+  border-right: 2px solid rgb(255 255 255 / 0.7);
+  border-bottom: 2px solid rgb(255 255 255 / 0.7);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gaming-root .chat-row.leaving {
+    transition-duration: 200ms;
+  }
+}

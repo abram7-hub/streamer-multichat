@@ -1,0 +1,16 @@
+{
+  "extends": "@electron-toolkit/tsconfig/tsconfig.node.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "moduleResolution": "bundler",
+    "types": ["electron-vite/node", "node"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true
+  },
+  "include": [
+    "electron/main/**/*.ts",
+    "electron/preload/**/*.ts",
+    "shared/**/*.ts",
+    "electron.vite.config.ts"
+  ]
+}

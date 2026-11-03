@@ -1,0 +1,119 @@
+/* Podzbiór reguł z global.css potrzebny współdzielonym komponentom (FragmentsText/PlatformIcon)
+   używanym w nakładce OBS. Celowo osobny plik — patrz komentarz w overlay-main.tsx. */
+
+html,
+body {
+  margin: 0;
+  overflow: hidden;
+  background: transparent;
+}
+
+.overlay-root {
+  box-sizing: border-box;
+  height: 100vh;
+  overflow: hidden;
+  padding: 10px;
+  color: #fff;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+/* Lista wypełnia nakładkę bez paska przewijania; przewinięcie do najnowszej krawędzi ustawia
+   overlay-main.tsx (kolejność wiadomości zależy od ustawień układu). */
+.overlay-list {
+  box-sizing: border-box;
+  height: 100%;
+  overflow: hidden;
+}
+
+.overlay-row {
+  line-height: 1.35;
+  /* Czytelność na dowolnym tle sceny OBS (statyczny cień tekstu - nie animowany). */
+  text-shadow: 0 1px 3px rgb(0 0 0 / 0.9);
+  /* Pomija pracę layoutu/malowania dla wierszy poza widocznym obszarem - realny odpowiednik
+     wirtualizacji listy bez własnej logiki okienkowania i bez dodatkowej biblioteki. Nakładka OBS
+     zwykle pokazuje tylko kilkanaście najnowszych wierszy (`maxMessages`), reszta jest przycięta. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 26px;
+}
+
+.platform-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.message-text {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.message-link {
+  color: inherit;
+  text-decoration: underline;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+}
+
+.emote-img {
+  height: 1.6em;
+  vertical-align: middle;
+  margin: 0 1px;
+}
+
+.emote-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+.emote-wrap .emote-img {
+  margin: 0;
+}
+.emote-overlay {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  pointer-events: none;
+}
+
+.event-icon {
+  margin-right: 5px;
+}
+.event-text {
+  font-weight: 700;
+}
+.event-meta {
+  opacity: 0.8;
+  font-size: 0.85em;
+}
+.event-user-message {
+  opacity: 0.95;
+}
+
+.platform-icon {
+  margin-right: 4px;
+  vertical-align: middle;
+}
+.badges {
+  display: inline;
+}
+.badge-img,
+.event-reward-img {
+  width: 1.1em;
+  height: 1.1em;
+  object-fit: contain;
+  vertical-align: -0.18em;
+  margin-right: 3px;
+}
+.author-name {
+  font-weight: 700;
+}
+
+.timestamp {
+  opacity: 0.7;
+  font-size: 0.75em;
+}

@@ -1,0 +1,272 @@
+/* Wygląd listy wiadomości wspólny dla czatu głównego, nakładki OBS i podglądu w ustawieniach.
+   Kontener `.chat-list` dostaje zmienne CSS i atrybuty data-* z shared/appearance.ts - wiersze
+   tylko je czytają, więc zmiana wyglądu nie renderuje ponownie żadnej wiadomości.
+
+   Animacje używają wyłącznie `transform` i `opacity` (kompozytor GPU, bez przeliczania układu):
+   pojawienie się wiersza nie przesuwa sąsiednich wierszy w trakcie animacji. */
+
+.chat-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--msg-gap, 2px);
+  font-size: var(--chat-font-size, 15px);
+}
+
+.chat-row {
+  position: relative;
+  flex-shrink: 0;
+  padding: 3px 6px;
+  border-radius: var(--msg-radius, 6px);
+  background: var(--row-bg, transparent);
+}
+.chat-row[data-platform='twitch'] {
+  --row-bg: var(--pc-twitch-bg);
+  --row-accent: var(--pc-twitch-accent);
+}
+.chat-row[data-platform='kick'] {
+  --row-bg: var(--pc-kick-bg);
+  --row-accent: var(--pc-kick-accent);
+}
+.chat-row[data-platform='youtube'] {
+  --row-bg: var(--pc-youtube-bg);
+  --row-accent: var(--pc-youtube-accent);
+}
+.chat-row[data-platform='tiktok'] {
+  --row-bg: var(--pc-tiktok-bg);
+  --row-accent: var(--pc-tiktok-accent);
+}
+
+/* Zdarzenia streamowe: cienka lewa krawędź w kolorze akcentu platformy. */
+.chat-row.event-row {
+  box-shadow: inset 3px 0 0 var(--row-accent, #9146ff);
+  padding-left: 9px;
+}
+
+/* Rozmiary elementów wiersza. */
+.chat-list .platform-icon svg {
+  width: var(--icon-size, 14px);
+  height: var(--icon-size, 14px);
+}
+.chat-list .emote-img {
+  height: var(--emote-size, 1.6em);
+}
+.chat-list .badge-img {
+  width: var(--badge-size, 1.15em);
+  height: var(--badge-size, 1.15em);
+}
+
+.chat-list[data-compact='true'] .chat-row {
+  padding: 1px 5px;
+  line-height: 1.25;
+}
+.chat-list[data-compact='true'] .message-line {
+  line-height: 1.25;
+}
+
+/* Szerokość "dopasowana": tło tylko pod treścią wiadomości. */
+.chat-list[data-width='fit'] .chat-row {
+  align-self: flex-start;
+  max-width: 100%;
+  transform-origin: left center;
+}
+
+.chat-list[data-timestamps='false'] .timestamp,
+.chat-list[data-badges='false'] .badges {
+  display: none;
+}
+
+/* ── Animacja pojawienia się (tylko nowe wiersze - klasa .fresh) ─────────────────────────────── */
+.chat-list[data-enter='left'] .chat-row.fresh {
+  --enter-anim: row-enter-left var(--enter-duration, 260ms) cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+.chat-list[data-enter='right'] .chat-row.fresh {
+  --enter-anim: row-enter-right var(--enter-duration, 260ms) cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+.chat-list[data-enter='bottom'] .chat-row.fresh {
+  --enter-anim: row-enter-bottom var(--enter-duration, 260ms) cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+.chat-list[data-enter='expand'] .chat-row.fresh {
+  --enter-anim: row-enter-expand var(--enter-duration, 260ms) cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+/* Bounce: skala całego wiersza (bez zmiany width/height - brak przesunięć układu). Startuje po
+   animacji wejścia, żeby obie nie walczyły o tę samą właściwość transform. */
+.chat-list[data-effect='bounce'] .chat-row.fresh,
+.chat-list[data-effect='pulse-bounce'] .chat-row.fresh {
+  --bounce-anim: row-bounce var(--bounce-duration, 440ms) ease-out var(--bounce-delay, 0ms) 1;
+}
+.chat-list:not([data-enter='none']) .chat-row.fresh {
+  --bounce-delay: var(--enter-duration, 260ms);
+}
+
+.chat-row.fresh {
+  animation: var(--enter-anim, none), var(--bounce-anim, none);
+}
+
+@keyframes row-enter-left {
+  from {
+    transform: translateX(calc(-1 * var(--enter-distance, 18px)));
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes row-enter-right {
+  from {
+    transform: translateX(var(--enter-distance, 18px));
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes row-enter-bottom {
+  from {
+    transform: translateY(var(--enter-distance, 18px));
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes row-enter-expand {
+  from {
+    transform: scale(0.94);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes row-bounce {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(var(--bounce-up, 1.04));
+  }
+  70% {
+    transform: scale(var(--bounce-down, 0.99));
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* ── Pulsowanie kolorem ──────────────────────────────────────────────────────────────────────────
+   Warstwa ::after nad tłem wiersza w kolorze akcentu platformy; animowane jest wyłącznie jej
+   `opacity`: rozjaśnienie, powrót, drugie słabsze rozjaśnienie, brak efektu. Jednorazowo, 2 s. */
+.chat-list[data-effect='pulse'] .chat-row.fresh::after,
+.chat-list[data-effect='pulse-bounce'] .chat-row.fresh::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--row-accent, #ffffff) var(--pulse-mix, 22%), transparent);
+  opacity: 0;
+  pointer-events: none;
+  animation: row-pulse 2s ease-in-out 1;
+}
+@keyframes row-pulse {
+  0% {
+    opacity: 0;
+  }
+  22% {
+    opacity: 1;
+  }
+  48% {
+    opacity: 0.2;
+  }
+  70% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ── Ograniczenie ruchu (ustawienie systemu) ─────────────────────────────────────────────────────
+   Bez przesuwania i skalowania: nowa wiadomość tylko łagodnie się pojawia, a pulsowanie zamienia
+   się w jedno spokojne wygaszenie. */
+@keyframes row-enter-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes row-pulse-reduced {
+  0% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chat-row.fresh {
+    animation: none;
+  }
+  .chat-list:not([data-enter='none']) .chat-row.fresh {
+    animation: row-enter-fade var(--enter-duration, 260ms) ease-out both;
+  }
+  .chat-list[data-effect='pulse'] .chat-row.fresh::after,
+  .chat-list[data-effect='pulse-bounce'] .chat-row.fresh::after {
+    animation: row-pulse-reduced 2s ease-out 1;
+  }
+}
+
+/* -- Wzmianki --------------------------------------------------------------------------------------
+   Wyróżnienie (tło + lewa krawędź) z ustawień "Wzmianki" - zmienne --mention-* na kontenerze.
+   Mocniejszy błysk i podskoczenie działają niezależnie od zwykłych efektów (również przy
+   wyłączonych animacjach), tylko dla nowo odebranej wzmianki. */
+/* Wyższa szczegółowość niż krawędź wiadomości płatnej - wzmianka jest ważniejsza. */
+.chat-list .chat-row[data-mention='true'] {
+  background: linear-gradient(var(--mention-bg, rgba(255, 176, 32, 0.14)), var(--mention-bg, rgba(255, 176, 32, 0.14))),
+    var(--row-bg, transparent);
+  box-shadow: inset 3px 0 0 var(--mention-border, #ffb020);
+}
+.chat-list[data-mention-bounce='true'] .chat-row.fresh[data-mention='true'] {
+  --bounce-anim: row-bounce-mention 520ms ease-out var(--bounce-delay, 0ms) 1;
+}
+.chat-list[data-mention-pulse='true'] .chat-row.fresh[data-mention='true']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--mention-accent, #ffd27a) 38%, transparent);
+  opacity: 0;
+  pointer-events: none;
+  animation: row-pulse 2.4s ease-in-out 1;
+}
+@keyframes row-bounce-mention {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.06);
+  }
+  70% {
+    transform: scale(0.985);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chat-list[data-mention-pulse='true'] .chat-row.fresh[data-mention='true']::after {
+    animation: row-pulse-reduced 2s ease-out 1;
+  }
+}
+
+/* Przypięta wiadomość w historii czatu: mały znacznik przed treścią. */
+.chat-row[data-pinned='true'] .message-line::before {
+  content: '📌 ';
+  font-size: 0.85em;
+}
